@@ -11,18 +11,20 @@ class _SelectRow extends StatelessWidget {
   final Function(bool) onChange;
   final bool selected;
   final String text;
+  final Color checkBoxColor;
 
   const _SelectRow(
       {Key? key,
       required this.onChange,
       required this.selected,
+      required this.checkBoxColor,
       required this.text})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: (){
+      onTap: () {
         onChange(!selected);
         _theState.notify();
       },
@@ -31,6 +33,9 @@ class _SelectRow extends StatelessWidget {
         child: Row(
           children: [
             Checkbox(
+                fillColor:
+                    MaterialStateProperty.all(
+                        checkBoxColor),
                 value: selected,
                 onChanged: (x) {
                   onChange(x!);
@@ -71,18 +76,21 @@ class DropDownMultiSelect extends StatefulWidget {
   final String? whenEmpty;
 
   /// a function to build custom childern
-  final Widget Function(List<String> selectedValues)? childBuilder;
+  final Widget Function(
+      List<String> selectedValues)? childBuilder;
 
   /// a function to build custom menu items
-  final Widget Function(String option)? menuItembuilder;
+  final Widget Function(String option)?
+      menuItembuilder;
 
   /// a function to validate
-  final String Function(String? selectedOptions)? validator;
+  final String Function(String? selectedOptions)?
+      validator;
 
   /// defines whether the widget is read-only
   final bool readOnly;
 
-  /// icon shown on the right side of the field 
+  /// icon shown on the right side of the field
   final Widget? icon;
 
   /// Textstyle for the hint
@@ -90,6 +98,9 @@ class DropDownMultiSelect extends StatefulWidget {
 
   /// hint to be shown when there's nothing else to be shown
   final Widget? hint;
+
+  /// color that fills out checkbox
+  final Color checkBoxColor;
 
   const DropDownMultiSelect({
     Key? key,
@@ -99,6 +110,7 @@ class DropDownMultiSelect extends StatefulWidget {
     this.whenEmpty,
     this.icon,
     this.hint,
+    this.checkBoxColor = Colors.black,
     this.hintStyle,
     this.childBuilder,
     this.menuItembuilder,
@@ -110,99 +122,153 @@ class DropDownMultiSelect extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _DropDownMultiSelectState createState() => _DropDownMultiSelectState();
+  _DropDownMultiSelectState createState() =>
+      _DropDownMultiSelectState();
 }
 
-class _DropDownMultiSelectState extends State<DropDownMultiSelect> {
+class _DropDownMultiSelectState
+    extends State<DropDownMultiSelect> {
   @override
   Widget build(BuildContext context) {
     return Container(
       child: Stack(
         alignment: Alignment.centerLeft,
         children: [
-          _theState.rebuild(() => widget.childBuilder != null
-              ? widget.childBuilder!(widget.selectedValues)
+          _theState.rebuild(() => widget
+                      .childBuilder !=
+                  null
+              ? widget.childBuilder!(
+                  widget.selectedValues)
               : Padding(
-                  padding:
-                      widget.decoration !=null ? widget.decoration!.contentPadding !=null ? widget.decoration!.contentPadding! : EdgeInsets.symmetric(horizontal: 10) : EdgeInsets.symmetric(horizontal: 10),
+                  padding: widget.decoration !=
+                          null
+                      ? widget.decoration!
+                                  .contentPadding !=
+                              null
+                          ? widget.decoration!
+                              .contentPadding!
+                          : EdgeInsets.symmetric(
+                              horizontal: 10)
+                      : EdgeInsets.symmetric(
+                          horizontal: 10),
                   child: Padding(
-                    
-                    padding: const EdgeInsets.only(right: 20),
-                    child: Text(widget.selectedValues.length > 0
+                    padding:
+                        const EdgeInsets.only(
+                            right: 20),
+                    child: Text(widget
+                                .selectedValues
+                                .length >
+                            0
                         ? widget.selectedValues
-                            .reduce((a, b) => a + ' , ' + b)
+                            .reduce((a, b) =>
+                                a + ' , ' + b)
                         : widget.whenEmpty ?? ''),
                   ))),
           Container(
             child: Theme(
               data: Theme.of(context).copyWith(),
-              child: DropdownButtonFormField<String>(
-                
+              child:
+                  DropdownButtonFormField<String>(
                 hint: widget.hint,
                 style: widget.hintStyle,
-                
                 icon: widget.icon,
-                validator: widget.validator != null ? widget.validator : null,
-                decoration: widget.decoration != null
+                validator:
+                    widget.validator != null
+                        ? widget.validator
+                        : null,
+                decoration: widget.decoration !=
+                        null
                     ? widget.decoration
                     : InputDecoration(
-                        border: OutlineInputBorder(),
+                        border:
+                            OutlineInputBorder(),
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
+                        contentPadding:
+                            EdgeInsets.symmetric(
                           vertical: 15,
                           horizontal: 10,
                         ),
                       ),
                 isDense: widget.isDense,
-                onChanged: widget.enabled ? (x) {} : null,
-                isExpanded: false,
-                value: widget.selectedValues.length > 0
-                    ? widget.selectedValues[0]
+                onChanged: widget.enabled
+                    ? (x) {}
                     : null,
+                isExpanded: false,
+                value:
+                    widget.selectedValues.length >
+                            0
+                        ? widget.selectedValues[0]
+                        : null,
                 selectedItemBuilder: (context) {
                   return widget.options
-                      .map((e) => DropdownMenuItem(
+                      .map((e) =>
+                          DropdownMenuItem(
                             child: Container(),
                           ))
                       .toList();
                 },
                 items: widget.options
-                    .map((x) => DropdownMenuItem(
-                          child: _theState.rebuild(() {
-                            return widget.menuItembuilder != null
-                                ? widget.menuItembuilder!(x)
-                                : _SelectRow(
-                                    selected: widget.selectedValues.contains(x),
-                                    text: x,
-                                    onChange: (isSelected) {
-                                      if (isSelected) {
-                                        var ns = widget.selectedValues;
-                                        ns.add(x);
-                                        widget.onChanged(ns);
-                                      } else {
-                                        var ns = widget.selectedValues;
-                                        ns.remove(x);
-                                        widget.onChanged(ns);
-                                      }
-                                    },
-                                  );
-                          }),
-                          value: x,
-                          onTap: !widget.readOnly
-                              ? () {
-                                  if (widget.selectedValues.contains(x)) {
-                                    var ns = widget.selectedValues;
-                                    ns.remove(x);
-                                    widget.onChanged(ns);
-                                  } else {
-                                    var ns = widget.selectedValues;
-                                    ns.add(x);
-                                    widget.onChanged(ns);
-                                  }
+                    .map(
+                      (x) => DropdownMenuItem(
+                        child:
+                            _theState.rebuild(() {
+                          return widget
+                                      .menuItembuilder !=
+                                  null
+                              ? widget
+                                  .menuItembuilder!(x)
+                              : _SelectRow(checkBoxColor: widget.checkBoxColor,
+                                  selected: widget
+                                      .selectedValues
+                                      .contains(
+                                          x),
+                                  text: x,
+                                  onChange:
+                                      (isSelected) {
+                                    if (isSelected) {
+                                      var ns = widget
+                                          .selectedValues;
+                                      ns.add(x);
+                                      widget
+                                          .onChanged(
+                                              ns);
+                                    } else {
+                                      var ns = widget
+                                          .selectedValues;
+                                      ns.remove(
+                                          x);
+                                      widget
+                                          .onChanged(
+                                              ns);
+                                    }
+                                  },
+                                );
+                        }),
+                        value: x,
+                        onTap: !widget.readOnly
+                            ? () {
+                                if (widget
+                                    .selectedValues
+                                    .contains(
+                                        x)) {
+                                  var ns = widget
+                                      .selectedValues;
+                                  ns.remove(x);
+                                  widget
+                                      .onChanged(
+                                          ns);
+                                } else {
+                                  var ns = widget
+                                      .selectedValues;
+                                  ns.add(x);
+                                  widget
+                                      .onChanged(
+                                          ns);
                                 }
-                              : null,
-                        ),
-                        )
+                              }
+                            : null,
+                      ),
+                    )
                     .toList(),
               ),
             ),
