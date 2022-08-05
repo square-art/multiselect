@@ -102,6 +102,9 @@ class DropDownMultiSelect extends StatefulWidget {
   /// color that fills out checkbox
   final Color checkBoxColor;
 
+  /// height of the container
+  final double? height;
+
   const DropDownMultiSelect({
     Key? key,
     required this.options,
@@ -114,6 +117,7 @@ class DropDownMultiSelect extends StatefulWidget {
     this.hintStyle,
     this.childBuilder,
     this.menuItembuilder,
+    this.height,
     this.isDense = true,
     this.enabled = true,
     this.decoration,
@@ -130,6 +134,158 @@ class _DropDownMultiSelectState
     extends State<DropDownMultiSelect> {
   @override
   Widget build(BuildContext context) {
+    if (widget.height != null) {
+      return Container(
+      height: widget.height,
+      child: Stack(
+        alignment: Alignment.centerLeft,
+        children: [
+          _theState.rebuild(() => widget
+                      .childBuilder !=
+                  null
+              ? widget.childBuilder!(
+                  widget.selectedValues)
+              : Padding(
+                  padding: widget.decoration !=
+                          null
+                      ? widget.decoration!
+                                  .contentPadding !=
+                              null
+                          ? widget.decoration!
+                              .contentPadding!
+                          : EdgeInsets.symmetric(
+                              horizontal: 10)
+                      : EdgeInsets.symmetric(
+                          horizontal: 10),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.only(
+                            right: 20),
+                    child: Text(widget
+                                .selectedValues
+                                .length >
+                            0
+                        ? widget.selectedValues
+                            .reduce((a, b) =>
+                                a + ' , ' + b)
+                        : widget.whenEmpty ?? ''),
+                  ))),
+          Container(
+            child: Theme(
+              data: Theme.of(context).copyWith(),
+              child:
+                  DropdownButtonFormField<String>(
+                hint: widget.hint,
+                style: widget.hintStyle,
+                icon: widget.icon,
+                validator:
+                    widget.validator != null
+                        ? widget.validator
+                        : null,
+                decoration: widget.decoration !=
+                        null
+                    ? widget.decoration
+                    : InputDecoration(
+                        border:
+                            OutlineInputBorder(),
+                        isDense: true,
+                        contentPadding:
+                            EdgeInsets.symmetric(
+                          vertical: 15,
+                          horizontal: 10,
+                        ),
+                      ),
+                isDense: widget.isDense,
+                onChanged: widget.enabled
+                    ? (x) {}
+                    : null,
+                isExpanded: false,
+                value:
+                    widget.selectedValues.length >
+                            0
+                        ? widget.selectedValues[0]
+                        : null,
+                selectedItemBuilder: (context) {
+                  return widget.options
+                      .map((e) =>
+                          DropdownMenuItem(
+                            child: Container(),
+                          ))
+                      .toList();
+                },
+                items: widget.options
+                    .map(
+                      (x) => DropdownMenuItem(
+                        child:
+                            _theState.rebuild(() {
+                          return widget
+                                      .menuItembuilder !=
+                                  null
+                              ? widget
+                                  .menuItembuilder!(x)
+                              : _SelectRow(
+                                  checkBoxColor:
+                                      widget
+                                          .checkBoxColor,
+                                  selected: widget
+                                      .selectedValues
+                                      .contains(
+                                          x),
+                                  text: x,
+                                  onChange:
+                                      (isSelected) {
+                                    if (isSelected) {
+                                      var ns = widget
+                                          .selectedValues;
+                                      ns.add(x);
+                                      widget
+                                          .onChanged(
+                                              ns);
+                                    } else {
+                                      var ns = widget
+                                          .selectedValues;
+                                      ns.remove(
+                                          x);
+                                      widget
+                                          .onChanged(
+                                              ns);
+                                    }
+                                  },
+                                );
+                        }),
+                        value: x,
+                        onTap: !widget.readOnly
+                            ? () {
+                                if (widget
+                                    .selectedValues
+                                    .contains(
+                                        x)) {
+                                  var ns = widget
+                                      .selectedValues;
+                                  ns.remove(x);
+                                  widget
+                                      .onChanged(
+                                          ns);
+                                } else {
+                                  var ns = widget
+                                      .selectedValues;
+                                  ns.add(x);
+                                  widget
+                                      .onChanged(
+                                          ns);
+                                }
+                              }
+                            : null,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    }
     return Container(
       child: Stack(
         alignment: Alignment.centerLeft,
@@ -217,7 +373,10 @@ class _DropDownMultiSelectState
                                   null
                               ? widget
                                   .menuItembuilder!(x)
-                              : _SelectRow(checkBoxColor: widget.checkBoxColor,
+                              : _SelectRow(
+                                  checkBoxColor:
+                                      widget
+                                          .checkBoxColor,
                                   selected: widget
                                       .selectedValues
                                       .contains(
